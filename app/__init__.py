@@ -27,4 +27,18 @@ def create_app():
         tasks.append(task)
         return jsonify(task), 201
 
+    @app.patch("/tasks/<int:task_id>")
+    def update_task(task_id):
+        body = request.get_json(silent=True) or {}
+        completed = body.get("completed")
+        if not isinstance(completed, bool):
+            return jsonify({"error": "completed boolean is required"}), 400
+
+        task = next((t for t in tasks if t["id"] == task_id), None)
+        if not task:
+            return jsonify({"error": "task not found"}), 404
+
+        task["completed"] = completed
+        return jsonify(task), 200
+
     return app

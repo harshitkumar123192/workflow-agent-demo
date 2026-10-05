@@ -36,3 +36,17 @@ def test_create_task_requires_title(client):
 
     assert response.status_code == 400
     assert response.json == {"error": "title is required"}
+
+
+def test_update_task(client):
+    client.post("/tasks", json={"title": "Task 1"})
+    response = client.patch("/tasks/1", json={"completed": True})
+
+    assert response.status_code == 200
+    assert response.json == {"id": 1, "title": "Task 1", "completed": True}
+
+
+def test_update_task_not_found(client):
+    response = client.patch("/tasks/999", json={"completed": True})
+
+    assert response.status_code == 404
