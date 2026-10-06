@@ -3,28 +3,56 @@ from flask import Flask, jsonify, request
 
 def create_app():
     app = Flask(__name__)
-    tasks = []
+    expenses = []
     next_id = 1
 
     @app.get("/")
     def index():
-        return jsonify({"service": "workflow-agent-demo", "status": "ok"})
+        return jsonify({"service": "expense-tracker", "status": "ok"})
 
-    @app.get("/tasks")
-    def list_tasks():
-        return jsonify({"tasks": tasks})
+    @app.get("/expenses")
+    def list_expenses():
+        return jsonify({"expenses": expenses})
 
-    @app.post("/tasks")
-    def create_task():
+    @app.post("/expenses")
+    def create_expense():
         nonlocal next_id
         body = request.get_json(silent=True) or {}
-        title = body.get("title")
-        if not isinstance(title, str) or not title.strip():
-            return jsonify({"error": "title is required"}), 400
 
-        task = {"id": next_id, "title": title.strip(), "completed": False}
+        description = body.get("description")
+        category = body.get("category")
+        amount = body.get("amount")
+
+        if not isinstance(description, str) or not description.strip():
+            return jsonify({"error": "description is required"}), 400
+
+        if not isinstance(category, str) or not category.strip():
+            return jsonify({"error": "category is required"}), 400
+
+        if not isinstance(amount, (int, float)) or amount <= 0:
+            return jsonify({"error": "amount must be a positive number"}), 400
+
+        expense = {
+            "id": next_id,
+            "description": description.strip(),
+            "amount": round(float(amount), 2),
+            "category": category.strip(),
+        }
         next_id += 1
-        tasks.append(task)
-        return jsonify(task), 201
+        expenses.append(expense)
+        return jsonify(expense), 201
+
+    @app.get("/summary")
+    def spending_summary():
+        by_category = {}
+        total = 0.0
+
+        for item in expenses:
+            cat = item["category"]
+            amt = item["amount"]
+            by_category[cat] = round(by_category.get(cat, 0.0) + amt, 2)
+            total = round(total + amt, 2)
+
+        return jsonify({"total": total, "by_category": by_category})
 
     return app

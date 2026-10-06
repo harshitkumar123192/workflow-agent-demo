@@ -1,26 +1,36 @@
-# Workflow Agent Demo Project
+# Workflow Agent Demo Project — Personal Expense Tracker
 
-A small Flask task-list API for demonstrating the Dev Workflow Agent. Use the same files
-to seed one Azure DevOps repository and one GitHub repository. The app uses in-memory
-data, and the demo deployment jobs intentionally do nothing except wait for approval.
+A small, realistic Flask Personal Expense Tracker API for demonstrating the Dev Workflow Agent.
+Use the same files to seed your Azure DevOps repository and GitHub repository. The app uses
+clean in-memory data, and the demo deployment jobs intentionally wait for manual human approval.
 
-## What the agent can change
+## What the starter API does
 
-The starter API supports `GET /tasks` and `POST /tasks`. A useful first Jira story is:
+- `POST /expenses` adds an expense (`description`, `amount`, `category`).
+- `GET /expenses` lists all expenses.
+- `GET /summary` totals spending across categories.
+- `GET /` health check.
 
-**Summary:** Add an endpoint to complete a task
+## Suggested First Jira Story
 
-**Description / acceptance criteria:**
+**Summary:** Filter expenses by category via query parameter
 
-- Add `PATCH /tasks/{task_id}`.
-- A JSON body with `{"completed": true}` or `{"completed": false}` updates that task.
-- Return the updated task as JSON with HTTP 200.
-- Return `{"error":"Task not found"}` with HTTP 404 for an unknown task ID.
-- Add tests for both updating a task and an unknown task ID.
+**Description / Acceptance Criteria:**
 
-The agent creates `feature/<JIRA-KEY>` from `main`, edits the configured `app/` folder,
-opens a PR, waits for a human review, merges after approval, then follows the CI/deployment
-workflow. You do not need to create the agent's feature branch manually.
+- Add `GET /expenses?category=<name>`.
+- When `?category=` is passed, return only expenses whose category matches.
+- When `?category=` is omitted or empty, return all expenses as before.
+- When no expenses match the specified category, return `{"expenses": []}` with HTTP 200.
+- Add tests in `app/tests/test_app.py` for matching and non-matching category filters.
+
+## Review-Change Exercise (Demonstrating Human-in-the-Loop Rework)
+
+When the agent creates the PR and reaches the `wait_for_review` step, vote **Changes Requested**
+in Azure DevOps or GitHub with this comment:
+
+> *"Please make the category filter case-insensitive so that `?category=food` matches an expense saved as `'Food'`. Also add a unit test covering mixed-case filtering."*
+
+The agent detects the rejection, pulls the comment, applies the case-insensitive fix, updates the tests, and pushes a second commit to the same PR.
 
 ## Local check
 
