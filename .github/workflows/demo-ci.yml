@@ -2,9 +2,9 @@ name: demo-ci
 
 on:
   push:
-    branches: [main]
+    branches: [main, main_bkp]
   pull_request:
-    branches: [main]
+    branches: [main, main_bkp]
 
 permissions:
   contents: read
@@ -24,7 +24,7 @@ jobs:
 
   deploy-dev:
     name: Deploy DEV
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main') || github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
     environment: demo-dev
