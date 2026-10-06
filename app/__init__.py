@@ -3,8 +3,19 @@ from flask import Flask, jsonify, request
 
 def create_app():
     app = Flask(__name__)
-    expenses = []
-    next_id = 1
+
+    # Pre-seeded sample data across multiple categories
+    expenses = [
+        {"id": 1, "description": "Team lunch", "amount": 45.00, "category": "Food"},
+        {"id": 2, "description": "Coffee meeting", "amount": 8.50, "category": "Food"},
+        {"id": 3, "description": "Team snacks", "amount": 22.00, "category": "Food"},
+        {"id": 4, "description": "Cloud server hosting", "amount": 120.00, "category": "Software"},
+        {"id": 5, "description": "Domain registration", "amount": 15.00, "category": "Software"},
+        {"id": 6, "description": "Train ticket", "amount": 18.50, "category": "Transport"},
+        {"id": 7, "description": "Airport taxi", "amount": 35.00, "category": "Transport"},
+        {"id": 8, "description": "Monitor stand", "amount": 29.99, "category": "Office"},
+    ]
+    next_id = 9
 
     @app.get("/")
     def index():

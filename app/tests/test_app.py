@@ -16,28 +16,33 @@ def test_health_endpoint(client):
     assert response.json["status"] == "ok"
 
 
-def test_expenses_start_empty(client):
+def test_expenses_pre_seeded(client):
     response = client.get("/expenses")
     assert response.status_code == 200
-    assert response.json == {"expenses": []}
+    expenses = response.json["expenses"]
+    assert len(expenses) == 8
+
+    # Verify categories present in starter dataset
+    categories = {e["category"] for e in expenses}
+    assert categories == {"Food", "Software", "Transport", "Office"}
 
 
 def test_create_expense_success(client):
     response = client.post(
         "/expenses",
-        json={"description": "Groceries", "amount": 42.50, "category": "Food"},
+        json={"description": "Notebook", "amount": 12.00, "category": "Office"},
     )
     assert response.status_code == 201
     assert response.json == {
-        "id": 1,
-        "description": "Groceries",
-        "amount": 42.50,
-        "category": "Food",
+        "id": 9,
+        "description": "Notebook",
+        "amount": 12.00,
+        "category": "Office",
     }
 
-    # Verify listed
+    # Verify count increased from 8 to 9
     list_res = client.get("/expenses")
-    assert len(list_res.json["expenses"]) == 1
+    assert len(list_res.json["expenses"]) == 9
 
 
 def test_create_expense_validation(client):
@@ -61,25 +66,14 @@ def test_create_expense_validation(client):
 
 
 def test_spending_summary(client):
-    client.post(
-        "/expenses",
-        json={"description": "Coffee", "amount": 5.50, "category": "Food"},
-    )
-    client.post(
-        "/expenses",
-        json={"description": "Lunch", "amount": 15.00, "category": "Food"},
-    )
-    client.post(
-        "/expenses",
-        json={"description": "Bus ticket", "amount": 3.00, "category": "Transport"},
-    )
-
     response = client.get("/summary")
     assert response.status_code == 200
-    assert response.json == {
-        "total": 23.50,
-        "by_category": {
-            "Food": 20.50,
-            "Transport": 3.00,
-        },
+    data = response.json
+
+    assert data["total"] == 293.99
+    assert data["by_category"] == {
+        "Food": 75.50,
+        "Software": 135.00,
+        "Transport": 53.50,
+        "Office": 29.99,
     }
