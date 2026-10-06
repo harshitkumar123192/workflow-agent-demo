@@ -27,6 +27,26 @@ def test_expenses_pre_seeded(client):
     assert categories == {"Food", "Software", "Transport", "Office"}
 
 
+def test_filter_expenses_by_category(client):
+    # Scenario 2: Filtering by a specific category
+    response = client.get("/expenses?category=Food")
+    assert response.status_code == 200
+    expenses = response.json["expenses"]
+    assert len(expenses) == 3
+    for e in expenses:
+        assert e["category"] == "Food"
+
+    # Case-insensitive filtering check if applicable, or exact match
+    response_lower = client.get("/expenses?category=food")
+    assert response_lower.status_code == 200
+    assert len(response_lower.json["expenses"]) == 3
+
+    # Scenario 3: Filtering by a category with no expenses
+    response_empty = client.get("/expenses?category=Entertainment")
+    assert response_empty.status_code == 200
+    assert response_empty.json["expenses"] == []
+
+
 def test_create_expense_success(client):
     response = client.post(
         "/expenses",
