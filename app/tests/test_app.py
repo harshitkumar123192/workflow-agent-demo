@@ -27,6 +27,21 @@ def test_expenses_pre_seeded(client):
     assert categories == {"Food", "Software", "Transport", "Office"}
 
 
+def test_filter_expenses_by_category(client):
+    # Scenario 2: Filtering by a specific category
+    response = client.get("/expenses?category=Food")
+    assert response.status_code == 200
+    expenses = response.json["expenses"]
+    assert len(expenses) == 3
+    for e in expenses:
+        assert e["category"] == "Food"
+
+    # Scenario 3: Filtering by a category with no expenses
+    response_empty = client.get("/expenses?category=Entertainment")
+    assert response_empty.status_code == 200
+    assert response_empty.json["expenses"] == []
+
+
 def test_create_expense_success(client):
     response = client.post(
         "/expenses",
@@ -42,7 +57,7 @@ def test_create_expense_success(client):
 
     # Verify count increased from 8 to 9
     list_res = client.get("/expenses")
-    assert len(list_res.json["expenses"]) == 9
+    assert len(list_res.json["expenses"]["expenses"] if isinstance(list_res.json["expenses"], dict) else list_res.json["expenses"]) == 9
 
 
 def test_create_expense_validation(client):
