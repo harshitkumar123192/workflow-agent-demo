@@ -23,7 +23,11 @@ def create_app():
 
     @app.get("/expenses")
     def list_expenses():
-        return jsonify({"expenses": expenses})
+        category = request.args.get("category")
+        filtered_expenses = expenses
+        if category:
+            filtered_expenses = [e for e in expenses if e["category"].lower() == category.lower()]
+        return jsonify({"expenses": filtered_expenses})
 
     @app.post("/expenses")
     def create_expense():
